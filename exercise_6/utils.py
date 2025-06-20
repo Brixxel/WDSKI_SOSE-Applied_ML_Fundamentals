@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 
+
 def make_spiral(n_samples=100):
     np.random.seed(42)
 
@@ -73,11 +74,29 @@ def plot_decision_boundary(model, X, y):
         _, predicted = torch.max(Z, 1)
     Z = predicted.numpy().reshape(xx.shape)
     plt.contourf(xx, yy, Z, alpha=0.8, cmap=plt.cm.Spectral)
-    plt.scatter(X[:, 0], X[:, 1], c=y, s=40, cmap=plt.cm.Spectral, edgecolor='k')
+    plt.scatter(X[:, 0], X[:, 1], c=y, s=40, cmap=plt.cm.Spectral, edgecolor='k', marker='x')
     plt.title("Decision Boundary")
     plt.xlabel('Feature 1')
     plt.ylabel('Feature 2')
     plt.show()
+
+def plot_decision_boundary_roundwise(model, X, y, ax):
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1),
+                         np.arange(y_min, y_max, 0.1))
+    grid_points = np.c_[xx.ravel(), yy.ravel()]
+    
+    with torch.no_grad():
+        grid_tensor = torch.tensor(grid_points, dtype=torch.float32)
+        Z = model(grid_tensor)
+        _, predicted_classes = torch.max(Z, 1)
+    
+    Z = predicted_classes.numpy().reshape(xx.shape)
+    ax.contourf(xx, yy, Z, alpha=0.5, cmap='plasma')  
+    ax.scatter(X[:, 0], X[:, 1], c=y, edgecolors='k', cmap=plt.cm.Spectral, s=40, marker='x')
+    ax.set_xlabel('Feature 1')
+    ax.set_ylabel('Feature 2')
 
 # Plot training process
 def plot_training_progress(iterations, X, y, losses, accs, model):
