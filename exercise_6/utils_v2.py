@@ -71,26 +71,26 @@ def plot_data_and_decision_boundary(model, X, y, ax=None, title="Decision Bounda
     return ax
 
 ########################################################
-#### Plotting the Network Architekture & Parameters ####
+#### Plotting the Network Architecture & Parameters ####
 ########################################################
 
 def draw_mlp_network(model, architecture_dict=None, show_weights=True, figsize=(12, 6), ax=None):
 
     """
-    Visualisiert ein MLP als schematische Darstellung – mit optionaler Gewichtsanzeige.
+    Visualizes an MLP as a schematic diagram – with optional weight display.
 
     Args:
-        model: Ein PyTorch-Modell (nn.Sequential oder benutzerdefinierte Subklasse)
-        architecture_dict: Optionales Dictionary mit input_dim, hidden_layers, output_dim
-        show_weights: Bool – falls True, werden die Gewichte farbcodiert gezeichnet
-        figsize: Tuple – Größe des Diagramms
+        model: A PyTorch model (nn.Sequential or custom subclass)
+        architecture_dict: Optional dictionary with input_dim, hidden_layers, output_dim
+        show_weights: Bool – if True, weights are color-coded
+        figsize: Tuple – size of the diagram
     """
 
-    # Architektur ableiten
+    # Derive architecture
     if architecture_dict is not None:
         layer_sizes = [architecture_dict['input_dim']] + architecture_dict['hidden_layers'] + [architecture_dict['output_dim']]
     else:
-        # Versuche automatisch die Layer-Größen aus dem Modell abzuleiten
+        # Try to automatically derive layer sizes from the model
         layer_sizes = []
         for layer in model.modules():
             if isinstance(layer, nn.Linear):
@@ -98,7 +98,7 @@ def draw_mlp_network(model, architecture_dict=None, show_weights=True, figsize=(
                     layer_sizes.append(layer.in_features)
                 layer_sizes.append(layer.out_features)
 
-    # Parameter extrahieren
+    # Extract parameters
     weight_tensors = []
     bias_tensors = []
     for name, param in model.named_parameters():
@@ -107,7 +107,7 @@ def draw_mlp_network(model, architecture_dict=None, show_weights=True, figsize=(
         elif 'bias' in name:
             bias_tensors.append(param.data.clone().detach())
 
-    # Zeichnung vorbereiten
+    # Prepare drawing
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize)
     ax.axis('off')
@@ -131,7 +131,7 @@ def draw_mlp_network(model, architecture_dict=None, show_weights=True, figsize=(
             circle = plt.Circle((px, py), 0.02, color=circle_color)
             ax.add_patch(circle)
 
-    # Verbindungen einzeichnen
+    # Draw connections
     for l in range(len(layer_sizes) - 1):
         weights = weight_tensors[l].cpu().numpy() if l < len(weight_tensors) else np.zeros((layer_sizes[l+1], layer_sizes[l]))
         vmin = np.min(np.abs(weights)) if show_weights else 0
@@ -189,44 +189,44 @@ def plot_training_progress(iterations, X, y, losses, accs, model_snapshots, arch
 
 
 #######
-#### Comparing Modells and their Training Process
+#### Comparing Models and their Training Process
 #######
 
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
-# Definiere eine anpassbare Modellklasse für den erweiterten Parametervergleich
+# Define a flexible model class for extended parameter comparison
 class FlexibleNeuralNetwork(nn.Module):
     def __init__(self, input_dim=2, hidden_layers=[10, 10], output_dim=2, activation=nn.ReLU()):
 
         super(FlexibleNeuralNetwork, self).__init__()
         
-        # Speichere Parameter für Referenz
+        # Store parameters for reference
         self.input_dim = input_dim
         self.hidden_layers = hidden_layers
         self.output_dim = output_dim
         self.activation = activation
         
-        # Erstelle die Schichten basierend auf den Parametern
+        # Create layers based on parameters
         layers = []
         
-        # Füge erste Schicht hinzu (input -> erste versteckte Schicht)
+        # Add first layer (input -> first hidden layer)
         prev_dim = input_dim
         
-        # Füge versteckte Schichten hinzu
+        # Add hidden layers
         for h_dim in hidden_layers:
             layers.append(nn.Linear(prev_dim, h_dim))
             layers.append(activation)
             prev_dim = h_dim
         
-        # Füge die Ausgabeschicht hinzu
+        # Add output layer
         layers.append(nn.Linear(prev_dim, output_dim))
         layers.append(nn.Softmax(dim=1))
         
-        # Erstelle das sequenzielle Modell
+        # Create the sequential model
         self.model = nn.Sequential(*layers)
         
-        # Initialisiere die Gewichte
+        # Initialize weights
         self.init_weights()
     
     def init_weights(self):
@@ -244,10 +244,10 @@ class FlexibleNeuralNetwork(nn.Module):
     
         return f"FlexibleNN(input={self.input_dim}, hidden={self.hidden_layers}, output={self.output_dim})"
 
-# Erweiterte Trainingsfunktion für den flexiblen Parametervergleich
+# Extended training function for flexible parameter comparison
 def train_flexible_model(model_params, training_params, dataset):
 
-    # Erstelle ein neues Modell mit den gegebenen Parametern
+    # Create a new model with the given parameters
     model = FlexibleNeuralNetwork(
         input_dim=model_params.get('input_dim', 2),
         hidden_layers=model_params.get('hidden_layers', [10, 10]),
@@ -255,11 +255,11 @@ def train_flexible_model(model_params, training_params, dataset):
         activation=model_params.get('activation', nn.ReLU())
     )
     
-    # Bereite Trainingsdaten vor
+    # Prepare training data
     batch_size = training_params.get('batch_size', 32)
     local_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     
-    # Initialisiere Verlustfunktion und Optimierer
+    # Initialize loss function and optimizer
     loss_fn = training_params.get('loss_fn', nn.CrossEntropyLoss)
     criterion = loss_fn()
     optimizer = training_params.get('optimizer_fn', optim.Adam)(
@@ -267,13 +267,13 @@ def train_flexible_model(model_params, training_params, dataset):
         lr=training_params.get('learning_rate', 0.01)
     )
     
-    # Training-Historie
+    # Training history
     history = {
         'train_loss': [],
         'train_acc': []
     }
     
-    # Training durchführen
+    # Run training
     num_epochs = training_params.get('num_epochs', 100)
     
     for epoch in range(num_epochs):
@@ -285,12 +285,12 @@ def train_flexible_model(model_params, training_params, dataset):
             y_pred = model(batch_X)
 
             if isinstance(criterion, nn.MSELoss):
-                # Für MSE: Konvertiere Klassenlabels zu One-Hot-Vektoren
+                # For MSE: convert class labels to one-hot vectors
                 y_one_hot = torch.zeros(batch_y.size(0), model_params.get('output_dim', 2))
                 y_one_hot.scatter_(1, batch_y.unsqueeze(1), 1.0)
                 loss = criterion(y_pred, y_one_hot)
             else:
-                # Für CrossEntropy und andere: Verwende die Labels direkt
+                # For CrossEntropy and others: use the labels directly
                 loss = criterion(y_pred, batch_y)
                             
             epoch_loss += loss.item()
@@ -303,25 +303,25 @@ def train_flexible_model(model_params, training_params, dataset):
                 predictions = torch.argmax(y_pred, dim=1)
                 correct += (predictions == batch_y).sum().item()
         
-        # Berechne durchschnittlichen Verlust und Genauigkeit
+        # Calculate average loss and accuracy
         train_loss = epoch_loss / len(local_dataloader)
         accuracy = 100 * correct / len(dataset)
         
         history['train_loss'].append(train_loss)
         history['train_acc'].append(accuracy)
         
-        # Fortschritt ausgeben
+        # Print progress
         if (epoch + 1) % 50 == 0:
             print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {train_loss:.4f}, Accuracy: {accuracy:.2f}%")
     
     return model, history
 
-# Funktion zum Vergleichen einer bestimmten Parametergruppe
+# Function to compare a specific parameter group
 def compare_parameter_group(parameter_group, dataset,  default_model_params={}, default_training_params={}):
     
     results = []
     
-    # Standardwerte festlegen
+    # Set default values
     std_model_params = {
         'input_dim': 2,
         'hidden_layers': [10, 10],
@@ -339,11 +339,11 @@ def compare_parameter_group(parameter_group, dataset,  default_model_params={}, 
     }
     std_training_params.update(default_training_params)
     
-    # Für jedes Parameter-Set in der Gruppe
+    # For each parameter set in the group
     for params in parameter_group:
-        print(f"\nTraining mit {params['name']}...")
+        print(f"\nTraining with {params['name']}...")
         
-        # Modell- und Trainingsparameter zusammenführen
+        # Merge model and training parameters
         model_params = std_model_params.copy()
         training_params = std_training_params.copy()
         
@@ -353,10 +353,10 @@ def compare_parameter_group(parameter_group, dataset,  default_model_params={}, 
         if 'training_params' in params:
             training_params.update(params['training_params'])
         
-        # Trainiere das Modell mit den aktuellen Parametern
+        # Train the model with the current parameters
         trained_model, history = train_flexible_model(model_params, training_params, dataset)
         
-        # Speichere die Ergebnisse
+        # Store the results
         res = {
             'params': params,
             'model': trained_model,
@@ -364,27 +364,27 @@ def compare_parameter_group(parameter_group, dataset,  default_model_params={}, 
         }
         results.append(res)
         
-        print(f"Training für {params['name']} abgeschlossen! Finale Genauigkeit: {history['train_acc'][-1]:.2f}%")
+        print(f"Training for {params['name']} completed! Final accuracy: {history['train_acc'][-1]:.2f}%")
     
     return results
 
 
-# Funktion zum Visualisieren der Ergebnisse
-def visualize_results(results, X, y, title="Parametervergleich"):
+# Function to visualize the results
+def visualize_results(results, X, y, title="Parameter Comparison"):
 
     n = len(results)
     if n == 0:
-        print("Keine Ergebnisse zum Visualisieren.")
+        print("No results to visualize.")
         return
     
-    # Visualisiere die Trainingskurven
+    # Visualize the training curves
     plt.figure(figsize=(15, 10))
     
     # Plot Loss
     plt.subplot(2, 1, 1)
     for res in results:
         plt.plot(res['history']['train_loss'], label=res['params']['name'])
-    plt.title(f'{title}: Vergleich des Trainingsverlusts')
+    plt.title(f'{title}: Training Loss Comparison')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
@@ -394,7 +394,7 @@ def visualize_results(results, X, y, title="Parametervergleich"):
     plt.subplot(2, 1, 2)
     for res in results:
         plt.plot(res['history']['train_acc'], label=res['params']['name'])
-    plt.title(f'{title}: Vergleich der Trainingsgenauigkeit')
+    plt.title(f'{title}: Training Accuracy Comparison')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy (%)')
     plt.legend()
@@ -403,27 +403,27 @@ def visualize_results(results, X, y, title="Parametervergleich"):
     plt.tight_layout()
     plt.show()
     
-    # Visualisiere nur die finalen Decision Boundaries in einem 2x2 Grid
-    # Unabhängig von der Anzahl der Modelle verwenden wir ein 2x2 Layout für Konsistenz
+    # Visualize only the final decision boundaries in a 2x2 grid
+    # Regardless of the number of models, use a 2x2 layout for consistency
     rows, cols = 2, 2
     
     fig, axes = plt.subplots(rows, cols, figsize=(12, 10))
-    axes = axes.flatten()  # Flatten für einfacheren Zugriff
+    axes = axes.flatten()  # Flatten for easier access
     
-    # Überschrift für die gesamte Grafik
+    # Title for the entire figure
     fig.suptitle(f'Decision Boundary: {title}', fontsize=16)
     
-    # Für jedes Ergebnis eine Entscheidungsgrenze plotten
+    # Plot a decision boundary for each result
     for i, res in enumerate(results):
-        if i < rows * cols:  # Nur so viele plotten, wie in das Grid passen
+        if i < rows * cols:  # Only plot as many as fit in the grid
             ax = axes[i]
             plot_data_and_decision_boundary(res['model'], X, y, ax=ax, title=f"Decision Boundary: {res['params']['name']}")
     
-    # Verstecke nicht benötigte Subplots
+    # Hide unused subplots
     for i in range(len(results), rows * cols):
         axes[i].axis('off')
     
     plt.tight_layout()
-    plt.subplots_adjust(top=0.9)  # Platz für den Haupttitel
+    plt.subplots_adjust(top=0.9)  # Leave space for the main title
     plt.show()
 
